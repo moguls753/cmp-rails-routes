@@ -1,6 +1,9 @@
 local debounce = require("telescope.debounce").debounce_leading
 local Job = require("plenary.job")
-local script_path = vim.fn.stdpath("config") .. "/scripts/rails_routes_to_json.rb"
+local current_script_path = debug.getinfo(1, "S").source:sub(2)
+local root_path = current_script_path:gsub("/[^/]+/[^/]+/[^/]+$", "")
+local script_path = root_path .. "/scripts/rails_routes_to_json.rb"
+
 local items = {}
 local w = vim.loop.new_fs_event()
 
@@ -87,10 +90,10 @@ local function start_watching_routes()
 							})
 						end
 					else
-						print("Fehler beim Decodieren der JSON-Ausgabe")
+						print("error parsing JSON file")
 					end
 				else
-					print("Ruby-Skript fehlgeschlagen mit return_val: ", return_val)
+					print("ruby-script failed with return_val:", return_val)
 				end
 			end,
 		}):start()
@@ -129,3 +132,5 @@ vim.api.nvim_create_autocmd("BufEnter", {
 		end
 	end,
 })
+
+return source

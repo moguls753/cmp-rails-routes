@@ -1,1 +1,1 @@
-require("cmp").register_source("rails_route_helpers", require("cmp-rails-routes"))
+require("cmp").register_source("rails-route-helpers", require("cmp-rails-routes"))
