@@ -2,4 +2,4 @@
 
 nvim-cmp source for Rail route helpers
 
-![Demo](https://imgur.com/a/1LntONs)
+![Demo](https://i.imgur.com/S5724lR.gif)
