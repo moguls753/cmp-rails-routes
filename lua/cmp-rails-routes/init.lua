@@ -120,7 +120,10 @@ source.complete = function(self, _, callback)
 end
 
 source.is_available = function()
-	return vim.bo.filetype == "eruby" or vim.bo.filetype == "slim"
+	return vim.bo.filetype == "eruby"
+		or vim.bo.filetype == "slim"
+		or vim.bo.filetype == "haml"
+		or vim.bo.filetype == "ruby"
 end
 
 vim.api.nvim_create_autocmd("BufEnter", {
