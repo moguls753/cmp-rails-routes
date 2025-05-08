@@ -55,33 +55,52 @@ local function start_watching_routes()
       command = 'bundle',
       args = { 'exec', 'ruby', script_path },
       on_exit = function(j, return_val)
-        if return_val == 0 then
-          local ok, routes = pcall(vim.json.decode, table.concat(j:result(), '\n'))
-          if ok then
-            items = {}
-            for _, route in ipairs(routes) do
-              local url_menu_label = create_text_label_with_params(string.format('%s_url', route.route), route.required_parts)
-              local url_insert_text = create_snippet_label_with_params(string.format('%s_url', route.route), route.required_parts)
-              table.insert(items, {
-                label = url_menu_label,
-                kind = vim.lsp.protocol.CompletionItemKind.Method,
-                insertText = url_insert_text,
-                insertTextFormat = vim.lsp.protocol.InsertTextFormat.Snippet,
-              })
-              local path_menu_label = create_text_label_with_params(string.format('%s_path', route.route), route.required_parts)
-              local path_insert_text = create_snippet_label_with_params(string.format('%s_path', route.route), route.required_parts)
-              table.insert(items, {
-                label = path_menu_label,
-                kind = vim.lsp.protocol.CompletionItemKind.Method,
-                insertText = path_insert_text,
-                insertTextFormat = vim.lsp.protocol.InsertTextFormat.Snippet,
-              })
+        if return_val ~= 0 then
+          print('ruby-script failed:', table.concat(j:stderr_result(), '\n'))
+          return
+        end
+
+        local lines = j:result()
+
+        local json_started = false
+        local json_lines = {}
+        for _, line in ipairs(lines) do
+          if not json_started then
+            if line:match '^%s*%[.*"route"' then
+              json_started = true
             end
-          else
-            print 'error parsing JSON file'
           end
-        else
-          print('ruby-script failed with return_val:', return_val)
+          if json_started then
+            table.insert(json_lines, line)
+          end
+        end
+
+        local raw = table.concat(json_lines, '\n')
+
+        local ok, routes = pcall(vim.json.decode, raw)
+        if not ok then
+          print 'Error while parsing JSON'
+          return
+        end
+
+        items = {}
+        for _, route in ipairs(routes) do
+          local url_menu_label = create_text_label_with_params(string.format('%s_url', route.route), route.required_parts)
+          local url_insert_text = create_snippet_label_with_params(string.format('%s_url', route.route), route.required_parts)
+          table.insert(items, {
+            label = url_menu_label,
+            kind = vim.lsp.protocol.CompletionItemKind.Method,
+            insertText = url_insert_text,
+            insertTextFormat = vim.lsp.protocol.InsertTextFormat.Snippet,
+          })
+          local path_menu_label = create_text_label_with_params(string.format('%s_path', route.route), route.required_parts)
+          local path_insert_text = create_snippet_label_with_params(string.format('%s_path', route.route), route.required_parts)
+          table.insert(items, {
+            label = path_menu_label,
+            kind = vim.lsp.protocol.CompletionItemKind.Method,
+            insertText = path_insert_text,
+            insertTextFormat = vim.lsp.protocol.InsertTextFormat.Snippet,
+          })
         end
       end,
     }):start()
