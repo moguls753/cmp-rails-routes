@@ -1,4 +1,8 @@
-require './config/environment'
+begin
+  require './config/environment'
+rescue StandardError
+  exit 1
+end
 
 routes = Rails.application.routes.routes.map do |route|
   next unless route.name
